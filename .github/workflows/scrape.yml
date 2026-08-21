@@ -1,0 +1,56 @@
+name: nightly-scrape
+
+# Project idea #5: scrapers in CI, no humans.
+# Every night this job runs every collector; if a target site changed,
+# the pipeline diagnoses the breakage and heals the collector with
+# `brightdata scraper heal --auto-approve` — then this job goes green
+# again on its own. The job summary shows any healing interventions.
+
+on:
+  schedule:
+    - cron: "30 21 * * *"   # 03:00 IST nightly
+  workflow_dispatch: {}      # manual trigger for demos
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nightly-scrape
+  cancel-in-progress: false
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BRIGHTDATA_API_KEY: ${{ secrets.BRIGHTDATA_API_KEY }}
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Restore previous radar database
+        uses: actions/cache@v4
+        with:
+          path: data/radar.db
+          key: radar-db-${{ github.run_id }}
+          restore-keys: radar-db-
+      - name: Run the pipeline (self-heals on breakage)
+        run: python -m radar.pipeline
+      - name: Write run summary (rows, statuses, healing events)
+        if: always()
+        run: python scripts/ci_summary.py >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload scraped data snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: radar-data-${{ github.run_number }}
+          path: data/radar.db
+          retention-days: 14
