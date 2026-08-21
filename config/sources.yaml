@@ -1,0 +1,44 @@
+# Opportunity Radar — scrape targets
+#
+# Each source is one Scraper Studio collector, created with:
+#   brightdata scraper create <url> "<description>"
+#
+# Paste the returned Collector ID (c_*) into `collector_id` below.
+# The `description` here should match what you gave `scraper create` —
+# it is reused by the auto-healer to explain the expected schema.
+
+sources:
+  - id: devpost-hackathons
+    name: Devpost — Open Hackathons
+    url: https://devpost.com/hackathons?status[]=open
+    collector_id: ""            # <- paste c_* id after `brightdata scraper create`
+    category: hackathon
+    description: >
+      Extract open hackathons: title, url, host organization, submission
+      deadline, prize amount, location (online/in-person), themes/tags.
+
+  - id: buddy4study-scholarships
+    name: Buddy4Study — Live Scholarships
+    url: https://www.buddy4study.com/scholarships
+    collector_id: ""
+    category: scholarship
+    description: >
+      Extract live scholarships: title, url, awarding organization,
+      application deadline, award amount, eligibility summary.
+
+  - id: wellfound-internships
+    name: Wellfound — Startup Internships
+    url: https://wellfound.com/role/r/software-engineer-intern
+    collector_id: ""
+    category: internship
+    description: >
+      Extract internship listings: title, url, company, location,
+      stipend/salary if shown, posted date.
+
+# Pipeline health thresholds — a run failing these triggers auto-heal.
+health:
+  min_rows: 3                # fewer rows than this = suspicious
+  max_null_ratio: 0.4        # a required field null in >40% of rows = broken
+  required_fields:
+    - title
+    - url

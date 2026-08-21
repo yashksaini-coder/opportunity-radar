@@ -1,0 +1,16 @@
+# secrets — never commit tokens (hackathon rule + common sense)
+.env
+
+# data & runtime
+data/*.db
+config/sources.extra.yaml
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+
+# editors
+.vscode/
+.idea/
+.DS_Store
