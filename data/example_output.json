@@ -1,0 +1,30 @@
+{
+  "_comment": "Example structured output from one pipeline run (source: devpost-hackathons). Regenerate with: python -m radar.pipeline --source devpost-hackathons",
+  "source_id": "devpost-hackathons",
+  "collector_id": "c_YOUR_COLLECTOR_ID",
+  "run_status": "ok",
+  "rows": [
+    {
+      "title": "Into the Scrape-Verse",
+      "url": "https://www.wemakedevs.org/hackathons/scrape-verse",
+      "organization": "WeMakeDevs x Bright Data",
+      "deadline": "2026-08-23",
+      "amount": "$15,000 prize pool",
+      "location": "Online",
+      "category": "hackathon",
+      "source_id": "devpost-hackathons",
+      "tags": ["web-scraping", "ai"]
+    },
+    {
+      "title": "Example Open Hackathon",
+      "url": "https://devpost.com/hackathons/example",
+      "organization": "Example Corp",
+      "deadline": "2026-09-15",
+      "amount": "$5,000",
+      "location": "Online",
+      "category": "hackathon",
+      "source_id": "devpost-hackathons",
+      "tags": []
+    }
+  ]
+}
