@@ -99,7 +99,11 @@
   .tile.heal .web-bg { position: absolute; right: -34px; top: -28px; opacity: .6; }
   .tile.heal .hint { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; }
 
-  .layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr); gap: 14px; align-items: start; }
+  .layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr); gap: 14px; align-items: stretch; }
+  /* Only the left card is a direct child; the aside's cards are nested.
+     flex-basis 0 keeps this column from driving the row height, so the
+     table grows to meet the spider-sense log instead of stopping short. */
+  .layout > .card { display: flex; flex-direction: column; min-height: 0; }
   .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; }
   .card h2 { font-family: "Space Grotesk", system-ui, sans-serif; font-size: 17px; font-weight: 600; }
   .card-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -109,13 +113,15 @@
 
   .thead { display: grid; grid-template-columns: minmax(240px, 1fr) 124px 138px 104px; gap: 12px; padding: 14px 12px 8px; font-size: 10.5px; letter-spacing: 0.10em; text-transform: uppercase; color: var(--faint); font-weight: 600; }
   .thead :last-child { text-align: right; }
-  .scroll { max-height: 430px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
-  .row { display: grid; grid-template-columns: minmax(240px, 1fr) 124px 138px 104px; gap: 12px; align-items: center; padding: 13px 12px; border-top: 1px solid var(--row-line); border-radius: 9px; box-shadow: inset 3px 0 0 0 transparent; }
+  .scroll { flex: 1 1 0; min-height: 430px; overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+  #rows { display: flex; flex-direction: column; gap: 8px; padding: 4px 0 2px; }
+  .row { display: grid; grid-template-columns: minmax(240px, 1fr) 124px 138px 104px; gap: 12px; align-items: center; padding: 13px 12px; border: 1px solid var(--row-line); border-radius: 10px; background: var(--surface-2); box-shadow: inset 3px 0 0 0 transparent; transition: border-color .15s ease; }
+  .row:hover { border-color: var(--border-2); }
   .row.crit { background: var(--crit-row-bg); box-shadow: inset 3px 0 0 0 var(--crit); }
   .row.warn { box-shadow: inset 3px 0 0 0 var(--warn-edge); }
-  .row .title a { display: inline-flex; align-items: center; gap: 6px; font-family: "Space Grotesk", system-ui, sans-serif; font-size: 15px; font-weight: 600; color: var(--ink); text-decoration: none; }
+  .row .title a { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-family: "Space Grotesk", system-ui, sans-serif; font-size: 15px; font-weight: 600; color: var(--ink); text-decoration: none; }
   .row .title a:hover { color: var(--accent-text); }
-  .row .title a svg { color: var(--faint); flex: none; }
+  .row .title a svg { color: var(--faint); flex: none; margin-left: 6px; vertical-align: -1px; }
   .row .meta { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; color: var(--ink-2); margin-top: 2px; }
   .cat { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-2); }
   .dot { width: 7px; height: 7px; border-radius: 50%; flex: none; }
@@ -140,7 +146,7 @@
   #addsrc-msg { font-size: 12px; margin: 0 0 4px; display: none; }
   #addsrc-msg.err { display: block; color: var(--crit-text); }
   #addsrc-msg.ok { display: block; color: var(--good); }
-  .src-scroll { max-height: 240px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+  .src-scroll { max-height: 320px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
   .source-row { display: flex; align-items: center; gap: 12px; padding: 12px 10px; border-top: 1px solid var(--row-line); border-radius: 9px; box-shadow: inset 3px 0 0 0 transparent; }
   .source-row.bad { background: var(--crit-row-bg); box-shadow: inset 3px 0 0 0 var(--crit); }
   .source-row.queued { background: var(--surface-2); }
