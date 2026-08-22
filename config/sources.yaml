@@ -13,9 +13,9 @@
 
 sources:
   - id: mlh-hackathons
-    name: MLH — 2026 Season Events
+    name: MLH — 2027 Season Events
     url: https://www.mlh.com/seasons/2027/events
-    collector_id: ""            # <- paste c_* id after `brightdata scraper create`
+    collector_id: "c_mt3wn2pz1kpvga867r"
     category: hackathon
     description: >
       Extract hackathon events: title, url, start_date, end_date,
@@ -24,7 +24,7 @@ sources:
   - id: scholars4dev-scholarships
     name: Scholars4Dev — International Scholarships
     url: https://www.scholars4dev.com/
-    collector_id: ""
+    collector_id: "c_mt3wn4dz210wjhjlbd"
     category: scholarship
     description: >
       Extract scholarship listings: title, url, deadline, host country,
@@ -33,7 +33,7 @@ sources:
   - id: python-jobs
     name: Python.org — Job Board
     url: https://www.python.org/jobs/
-    collector_id: ""
+    collector_id: "c_mt3wn62317q7krz1qx"
     category: job
     description: >
       Extract job postings: title, url, company, location, posted date,
@@ -41,8 +41,8 @@ sources:
 
 # Pipeline health thresholds — a run failing these triggers auto-heal.
 health:
-  min_rows: 3                # fewer rows than this = suspicious
-  max_null_ratio: 0.4        # a required field null in >40% of rows = broken
+  min_rows: 3 # fewer rows than this = suspicious
+  max_null_ratio: 0.4 # a required field null in >40% of rows = broken
   required_fields:
     - title
     - url
