@@ -113,6 +113,23 @@ tests/                # pytest: validator, store, healer (CLI faked)
 
 Run the tests: `make test`
 
+## Deploy (optional)
+
+The included `Dockerfile` runs the dashboard and pipeline in one image
+(Python + the Bright Data CLI). On Render/Railway/Fly:
+
+1. New web service → connect this repo → Docker runtime.
+2. Environment variables: `BRIGHTDATA_API_KEY` (required — the CLI
+   authenticates headlessly with it), `RADAR_RUN_TOKEN` (recommended on
+   any public URL: visitors can browse, but only requests carrying this
+   token in an `X-Run-Token` header can trigger scraping runs), and
+   optionally the Telegram pair.
+3. On a cold start with an empty store, the boot script runs one
+   pipeline pass automatically so the page shows live data.
+
+Trigger a run remotely:
+`curl -X POST https://<your-app>/api/run -H "X-Run-Token: <token>"`
+
 ## How Scraper Studio is used
 
 Scraper Studio is not an add-on here — it is the extraction layer *and* the

@@ -1,0 +1,8 @@
+.git
+data/*.db
+__pycache__
+**/__pycache__
+.pytest_cache
+docs
+.env
+*.bundle

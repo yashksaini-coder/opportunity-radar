@@ -1,0 +1,19 @@
+#!/bin/sh
+# Boot the dashboard; on a cold start with an empty store, kick off one
+# pipeline run in the background so visitors see live data, not an
+# empty page. (Free-tier hosts wipe the filesystem on every restart.)
+set -e
+
+(
+  sleep 5
+  if [ ! -s data/radar.db ]; then
+    echo "store is empty — running initial scrape"
+    python -m radar.pipeline || true
+  fi
+) &
+
+exec uvicorn dashboard.app:app \
+  --host 0.0.0.0 \
+  --port "${PORT:-8000}" \
+  --proxy-headers \
+  --forwarded-allow-ips="*"
