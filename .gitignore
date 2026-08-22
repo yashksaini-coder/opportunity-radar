@@ -17,3 +17,6 @@ venv/
 
 # private working docs (submission drafts, scripts) — keep out of the public repo
 docs/
+
+# demo seed for container cold starts (live db stays ignored)
+!data/seed.db
