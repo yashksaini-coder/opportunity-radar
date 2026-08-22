@@ -28,6 +28,15 @@ def main() -> None:
     if not items:
         sys.exit("no rows in the store — run `python -m radar.pipeline` first")
 
+    if not source_id:
+        # Sample across sources instead of taking the newest 8, which would
+        # all come from whichever collector ran last. The point of this file
+        # is that different collector shapes land in one common schema.
+        by_source: dict[str, list[dict]] = {}
+        for item in items:
+            by_source.setdefault(item["source_id"], []).append(item)
+        items = [item for group in by_source.values() for item in group[:3]]
+
     out = {
         "_comment": (
             "Real structured output produced by the pipeline. Dates without a "

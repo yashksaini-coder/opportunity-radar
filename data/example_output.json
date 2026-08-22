@@ -1,73 +1,94 @@
 {
-  "_comment": "Real structured output from the mlh-hackathons collector (brightdata scraper run). Regenerate with: python -m radar.pipeline --source mlh-hackathons",
-  "source_id": "mlh-hackathons",
-  "run_status": "ok",
+  "_comment": "Real structured output produced by the pipeline. Dates without a year in the source are inferred (rolled forward when past). Regenerate with: python scripts/export_example.py",
+  "source_id": "all",
   "rows": [
     {
-      "title": "HackPrix Season 3",
-      "url": "https://s3.hackprix.tech/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=HackPrix+Season+3",
+      "title": "Midnight Virtual Hackathon [August]",
+      "url": "https://events.mlh.com/events/14510-midnight-hackathon-august?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=Midnight+Virtual+Hackathon+%5BAugust%5D",
       "organization": null,
-      "deadline": "2027-06-13",
+      "deadline": "2026-08-28",
       "amount": null,
-      "location": "Hyderabad, Telangana, IN",
+      "location": "Everywhere, Worldwide, US",
       "category": "hackathon",
       "source_id": "mlh-hackathons",
-      "tags": []
+      "tags": ""
     },
     {
-      "title": "JAMHacks 10",
-      "url": "https://jamhacks.ca/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=JAMHacks+10",
+      "title": "PEC HACKS 4.0",
+      "url": "https://pechacks.org/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=PEC+HACKS+4.0",
       "organization": null,
-      "deadline": "2027-06-12",
+      "deadline": "2026-08-29",
       "amount": null,
-      "location": "Waterloo, Ontario, CA",
+      "location": "Chennai, Tamilnadu, IN",
       "category": "hackathon",
       "source_id": "mlh-hackathons",
-      "tags": []
+      "tags": ""
     },
     {
-      "title": "Global Hack Week: Hacking for Good",
-      "url": "https://events.mlh.io/events/14302-global-hack-week-hacking-for-good?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=Global+Hack+Week%3A+Hacking+for+Good",
+      "title": "Global Hack Week: Data",
+      "url": "https://events.mlh.io/events/14416-global-hack-week-data?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=Global+Hack+Week%3A+Data",
       "organization": null,
-      "deadline": "2027-06-12",
+      "deadline": "2026-09-11",
       "amount": null,
       "location": "Everywhere, Worldwide",
       "category": "hackathon",
       "source_id": "mlh-hackathons",
-      "tags": []
+      "tags": ""
     },
     {
-      "title": "Hack4Her",
-      "url": "https://www.hack4her.com/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=Hack4Her",
+      "title": "Foreign Fulbright Student Program",
+      "url": "http://www.scholars4dev.com/2876/usa-fulbright-scholarships-for-international-students/",
       "organization": null,
-      "deadline": "2027-06-06",
+      "deadline": null,
       "amount": null,
-      "location": "Monterrey, Nuevo Leon, MX",
-      "category": "hackathon",
-      "source_id": "mlh-hackathons",
-      "tags": []
+      "location": null,
+      "category": "scholarship",
+      "source_id": "scholars4dev-scholarships",
+      "tags": ""
     },
     {
-      "title": "MPC Hacks",
-      "url": "https://mpchacks.com/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=MPC+Hacks",
+      "title": "Humphrey Fellowship Program",
+      "url": "http://www.scholars4dev.com/2887/hubert-humphrey-fellowships-for-international-students/",
       "organization": null,
-      "deadline": "2027-05-30",
+      "deadline": null,
       "amount": null,
-      "location": "Montreal, Quebec, CA",
-      "category": "hackathon",
-      "source_id": "mlh-hackathons",
-      "tags": []
+      "location": null,
+      "category": "scholarship",
+      "source_id": "scholars4dev-scholarships",
+      "tags": ""
     },
     {
-      "title": "Quackhacks 3",
-      "url": "https://www.quackhacks.org/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=Quackhacks+3",
+      "title": "AU Emerging Global Leader Scholarship Program",
+      "url": "http://www.scholars4dev.com/7085/american-university-scholarships-for-international-students/",
       "organization": null,
-      "deadline": "2027-05-30",
+      "deadline": null,
       "amount": null,
-      "location": "Eugene, Oregon, US",
-      "category": "hackathon",
-      "source_id": "mlh-hackathons",
-      "tags": []
+      "location": null,
+      "category": "scholarship",
+      "source_id": "scholars4dev-scholarships",
+      "tags": ""
+    },
+    {
+      "title": "Senior Data Engineer (100% Remote - USA Only)",
+      "url": "https://www.python.org/jobs/8095/",
+      "organization": "Six Feet Up",
+      "deadline": null,
+      "amount": null,
+      "location": "100% Remote, USA",
+      "category": "job",
+      "source_id": "python-jobs",
+      "tags": "Back end,Big Data,Cloud,Database,Machine Learning"
+    },
+    {
+      "title": "Agentic Python Engineer",
+      "url": "https://www.python.org/jobs/8125/",
+      "organization": "Evaboot",
+      "deadline": null,
+      "amount": null,
+      "location": "Remote, Remote/Worldwide, Remote/Worldwide",
+      "category": "job",
+      "source_id": "python-jobs",
+      "tags": "Back end,Integration,Machine Learning"
     }
   ]
 }
