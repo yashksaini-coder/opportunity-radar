@@ -17,7 +17,7 @@
     --accent: #3987e5; --accent-text: #6aa9ee;
     --accent-soft: rgba(57,135,229,0.14); --accent-border: rgba(57,135,229,0.38);
     --accent-chip-bg: rgba(57,135,229,0.10);
-    --cat-hackathon: #3987e5; --cat-scholarship: #d95926; --cat-internship: #199e70;
+    --cat-hackathon: #3987e5; --cat-scholarship: #d95926; --cat-internship: #199e70; --cat-job: #199e70;
     --good: #3fbf5f; --good-dot: #3fbf5f;
     --warn-text: #f5c95f; --warn-bg: rgba(250,178,25,0.18); --warn-edge: rgba(250,178,25,0.55);
     --crit: #d03b3b; --crit-text: #f08a8a; --crit-bg: rgba(208,59,59,0.20);
@@ -34,7 +34,7 @@
       --accent: #2a78d6; --accent-text: #1c5cab;
       --accent-soft: rgba(42,120,214,0.12); --accent-border: rgba(42,120,214,0.40);
       --accent-chip-bg: rgba(42,120,214,0.08);
-      --cat-hackathon: #2a78d6; --cat-scholarship: #eb6834; --cat-internship: #1baf7a;
+      --cat-hackathon: #2a78d6; --cat-scholarship: #eb6834; --cat-internship: #1baf7a; --cat-job: #1baf7a;
       --good: #006300; --good-dot: #0ca30c;
       --warn-text: #7a5c00; --warn-bg: rgba(250,178,25,0.22); --warn-edge: rgba(179,124,0,0.55);
       --crit: #d03b3b; --crit-text: #b02a2a; --crit-bg: rgba(208,59,59,0.14);
@@ -310,7 +310,7 @@
 </div>
 
 <script>
-const CATS = ["hackathon", "scholarship", "internship"];
+const CATS = ["hackathon", "scholarship", "job"];
 const CAT_COLOR = c => `var(--cat-${CATS.includes(c) ? c : "hackathon"})`;
 const CHECK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>';
 const ALERT = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5M12 17h.01M10.3 3.9L2.6 17.4a2 2 0 001.7 3h15.4a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0"/></svg>';

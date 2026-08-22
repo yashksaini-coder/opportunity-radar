@@ -6,34 +6,38 @@
 # Paste the returned Collector ID (c_*) into `collector_id` below.
 # The `description` here should match what you gave `scraper create` —
 # it is reused by the auto-healer to explain the expected schema.
+#
+# Targets are deliberately server-rendered, low-protection listing pages
+# (verified before selection) that Bright Data's pre-built scraper
+# library does not cover.
 
 sources:
-  - id: devpost-hackathons
-    name: Devpost — Open Hackathons
-    url: https://devpost.com/hackathons?status[]=open
+  - id: mlh-hackathons
+    name: MLH — 2026 Season Events
+    url: https://www.mlh.com/seasons/2026/events
     collector_id: ""            # <- paste c_* id after `brightdata scraper create`
     category: hackathon
     description: >
-      Extract open hackathons: title, url, host organization, submission
-      deadline, prize amount, location (online/in-person), themes/tags.
+      Extract hackathon events: title, url, start_date, end_date,
+      location, whether in-person or digital.
 
-  - id: buddy4study-scholarships
-    name: Buddy4Study — Live Scholarships
-    url: https://www.buddy4study.com/scholarships
+  - id: scholars4dev-scholarships
+    name: Scholars4Dev — International Scholarships
+    url: https://www.scholars4dev.com/
     collector_id: ""
     category: scholarship
     description: >
-      Extract live scholarships: title, url, awarding organization,
-      application deadline, award amount, eligibility summary.
+      Extract scholarship listings: title, url, deadline, host country,
+      degree level, award or benefits summary.
 
-  - id: wellfound-internships
-    name: Wellfound — Startup Internships
-    url: https://wellfound.com/role/r/software-engineer-intern
+  - id: python-jobs
+    name: Python.org — Job Board
+    url: https://www.python.org/jobs/
     collector_id: ""
-    category: internship
+    category: job
     description: >
-      Extract internship listings: title, url, company, location,
-      stipend/salary if shown, posted date.
+      Extract job postings: title, url, company, location, posted date,
+      job types.
 
 # Pipeline health thresholds — a run failing these triggers auto-heal.
 health:

@@ -54,6 +54,7 @@ class Category(str, Enum):
     hackathon = "hackathon"
     scholarship = "scholarship"
     internship = "internship"
+    job = "job"
     other = "other"
 
 

@@ -111,7 +111,7 @@ def rows_to_opportunities(
                     title=str(row.get("title") or ""),
                     url=str(row.get("url") or row.get("link") or ""),
                     organization=_opt_str(row, "organization", "host", "company"),
-                    deadline=_opt_str(row, "deadline", "submission_deadline", "application_deadline"),
+                    deadline=_opt_str(row, "deadline", "submission_deadline", "application_deadline", "start_date"),
                     amount=_opt_str(row, "amount", "prize", "prize_amount", "stipend", "salary"),
                     location=_opt_str(row, "location"),
                     category=category,
