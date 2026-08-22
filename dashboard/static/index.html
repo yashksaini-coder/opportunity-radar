@@ -335,8 +335,11 @@
 </div>
 
 <script>
-const CATS = ["hackathon", "scholarship", "job"];
-const CAT_COLOR = c => `var(--cat-${CATS.includes(c) ? c : "hackathon"})`;
+/* Filters follow the data: adding a source in a new category (internship,
+   other, ...) wires up its chip and colour with no code change. The CSS
+   var fallback covers categories that have no palette entry. */
+let CATS = [];
+const CAT_COLOR = c => `var(--cat-${String(c).replace(/[^a-z-]/gi, "")}, var(--muted))`;
 const CHECK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M4 12.5l5 5L20 6.5"/></svg>';
 const ALERT = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5M12 17h.01M10.3 3.9L2.6 17.4a2 2 0 001.7 3h15.4a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0"/></svg>';
 const CLOCK = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
@@ -493,6 +496,8 @@ async function refresh() {
     fetch("/api/healing-log").then(r => r.json()),
   ]);
   allItems = opps.items;
+  const seen = [...new Set(allItems.map(i => i.category))].sort();
+  if (seen.join() !== CATS.join()) { CATS = seen; renderFilters(); }
   renderRows();
   const latestFailedHeal = heals.events.find(ev => ev.outcome === "failed");
   const failingCount = renderHealth(health, latestFailedHeal);
@@ -637,7 +642,6 @@ fetch("/api/config").then(r => r.json()).then(c => {
 }).catch(() => {});
 
 setRunUI("idle");
-renderFilters();
 refresh();
 setInterval(refresh, 60000);
 </script>
