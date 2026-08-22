@@ -48,15 +48,6 @@ sources:
       Extract job postings: title, url, company, location, posted date,
       whether remote, salary if shown.
 
-  - id: hackclub-hackathons
-    name: Hack Club — Community Hackathons
-    url: https://hackathons.hackclub.com/
-    collector_id: ""
-    category: hackathon
-    description: >
-      Extract hackathon events: title, url, start_date, end_date,
-      location, whether in-person or virtual.
-
   - id: opportunitydesk
     name: Opportunity Desk — Scholarships & Fellowships
     url: https://www.opportunitydesk.org/
