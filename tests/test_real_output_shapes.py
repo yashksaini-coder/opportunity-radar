@@ -79,3 +79,33 @@ def test_python_jobs_title_and_company_are_cleaned():
     assert opp.organization == "EPAM"
     assert opp.deadline is None          # posted_date is not a deadline
     assert opp.tags == ["Back end"]
+
+
+ERROR_RECORD_SHAPE = json.dumps([
+    {"title": "Golang / Go Job: Senior AI Engineer", "url": "https://grnh.se/abc",
+     "company": "Cast AI", "location": "EU Remote", "is_remote": True},
+    {"error": "Parse error: Invalid URL", "error_code": "parse_error"},
+    {"error": "Parse error: Invalid URL", "error_code": "parse_error"},
+])
+
+
+def test_per_input_error_records_are_not_rows():
+    """Collectors emit one error object per input they cannot process.
+
+    Counting them as rows made a healthy collector look 89% null and
+    triggered a heal against extraction that was working fine.
+    """
+    rows = _parse_rows(ERROR_RECORD_SHAPE)
+    assert len(rows) == 1
+    assert rows[0]["title"].startswith("Golang")
+
+    opportunities, errors = rows_to_opportunities(rows, "golang-jobs", "job")
+    assert not errors
+    assert opportunities[0].organization == "Cast AI"
+
+
+def test_error_record_carrying_a_real_title_is_kept():
+    """Only drop error records that carry no usable listing fields."""
+    shape = json.dumps([{"error": "partial", "title": "Real Job",
+                         "url": "https://example.org/j"}])
+    assert len(_parse_rows(shape)) == 1

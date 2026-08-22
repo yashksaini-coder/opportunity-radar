@@ -120,6 +120,11 @@ def _parse_rows(stdout: str) -> list[dict[str, Any]]:
 
 
 _ROW_MARKERS = ("title", "url", "link", "name")
+# Collectors emit one of these per input they could not process, e.g.
+# {"error": "Parse error: Invalid URL", "error_code": "parse_error"}.
+# They are failure reports, not listings — counting them as rows makes a
+# healthy collector look broken and triggers a pointless heal.
+_ERROR_KEYS = ("error", "error_code")
 
 
 def _flatten_element(element: dict[str, Any]) -> list[dict[str, Any]]:
@@ -133,6 +138,11 @@ def _flatten_element(element: dict[str, Any]) -> list[dict[str, Any]]:
             {k: v for k, v in row.items() if k != "input"}
             for rows in nested for row in rows
         ]
+    if any(k in element for k in _ERROR_KEYS) and not any(
+        str(element.get(k) or "").strip() for k in _ROW_MARKERS
+    ):
+        return []  # per-input error record, not a listing
+
     has_empty_list = any(
         isinstance(v, list) and not v for k, v in element.items() if k != "input"
     )
