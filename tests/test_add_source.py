@@ -1,11 +1,12 @@
-"""Tests for dashboard-added sources (make_source_from_url + persistence)."""
+"""Tests for dashboard-added sources and local .env loading."""
 
+import os
 from pathlib import Path
 
 import pytest
 import yaml
 
-from radar.config import append_extra_source, make_source_from_url
+from radar.config import _load_dotenv, append_extra_source, make_source_from_url
 
 
 def test_builds_valid_source_from_url():
@@ -43,3 +44,25 @@ def test_append_extra_source_round_trips(tmp_path: Path):
     ids = [entry["id"] for entry in data["sources"]]
     assert ids == [first.id, second.id]
     assert data["sources"][0]["collector_id"] == ""
+
+
+# -- .env loading -----------------------------------------------------
+
+def test_dotenv_fills_missing_vars_but_never_overrides(tmp_path: Path, monkeypatch):
+    env = tmp_path / ".env"
+    env.write_text(
+        "# comment line\n"
+        "\n"
+        "TELEGRAM_CHAT_ID=12345\n"
+        'TELEGRAM_BOT_TOKEN="quoted-token"\n'
+        "RADAR_AUTO_APPROVE=0\n"
+    )
+    monkeypatch.delenv("TELEGRAM_CHAT_ID", raising=False)
+    monkeypatch.delenv("TELEGRAM_BOT_TOKEN", raising=False)
+    monkeypatch.setenv("RADAR_AUTO_APPROVE", "1")  # real env must win
+
+    _load_dotenv(env)
+
+    assert os.environ["TELEGRAM_CHAT_ID"] == "12345"
+    assert os.environ["TELEGRAM_BOT_TOKEN"] == "quoted-token"  # quotes stripped
+    assert os.environ["RADAR_AUTO_APPROVE"] == "1"             # not overridden

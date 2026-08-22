@@ -24,6 +24,25 @@ PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_SOURCES_PATH = PROJECT_ROOT / "config" / "sources.yaml"
 EXTRA_SOURCES_PATH = PROJECT_ROOT / "config" / "sources.extra.yaml"
 DEFAULT_DB_PATH = PROJECT_ROOT / "data" / "radar.db"
+DOTENV_PATH = PROJECT_ROOT / ".env"
+
+
+def _load_dotenv(path: Path | None = None) -> None:
+    """Populate os.environ from .env, without overriding real env vars.
+
+    Keeps the README's `cp .env.example .env` promise true for local runs.
+    Platform-injected variables (GitHub Actions secrets, Render config)
+    already live in os.environ and always win over the file.
+    """
+    dotenv = path or DOTENV_PATH
+    if not dotenv.exists():
+        return
+    for line in dotenv.read_text().splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip("\"'"))
 
 
 @dataclass(frozen=True)
@@ -67,6 +86,7 @@ def load_settings(sources_path: Path | None = None) -> Settings:
     Raises FileNotFoundError with a helpful message if the config is
     missing, and ValueError if it is malformed.
     """
+    _load_dotenv()
     path = sources_path or DEFAULT_SOURCES_PATH
     if not path.exists():
         raise FileNotFoundError(
@@ -116,7 +136,9 @@ def load_settings(sources_path: Path | None = None) -> Settings:
     )
 
 
-def make_source_from_url(url: str, existing_ids: set[str], category: str = "other") -> Source:
+def make_source_from_url(
+    url: str, existing_ids: set[str], category: str = "other"
+) -> Source:
     """Build a valid Source from a bare URL (dashboard 'Add source').
 
     Validates the URL the same way sources.yaml is validated and derives
@@ -130,7 +152,12 @@ def make_source_from_url(url: str, existing_ids: set[str], category: str = "othe
     if any(host.endswith(suffix) for suffix in _BLOCKED_DOMAIN_SUFFIXES):
         raise ValueError("government/military sites are not allowed")
 
-    base = re.sub(r"[^a-z0-9-]", "-", host.removeprefix("www.").split(".")[0])[:40].strip("-") or "source"
+    base = (
+        re.sub(r"[^a-z0-9-]", "-", host.removeprefix("www.").split(".")[0])[:40].strip(
+            "-"
+        )
+        or "source"
+    )
     slug, n = base, 2
     while slug in existing_ids:
         slug, n = f"{base}-{n}", n + 1
@@ -159,8 +186,11 @@ def append_extra_source(source: Source, extra_path: Path | None = None) -> None:
         data.setdefault("sources", [])
     data["sources"].append(
         {
-            "id": source.id, "name": source.name, "url": source.url,
-            "collector_id": source.collector_id, "category": source.category,
+            "id": source.id,
+            "name": source.name,
+            "url": source.url,
+            "collector_id": source.collector_id,
+            "category": source.category,
             "description": source.description,
         }
     )
