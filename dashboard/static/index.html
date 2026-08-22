@@ -143,7 +143,12 @@
   .empty-block { padding: 40px 20px; text-align: center; border-top: 1px solid var(--row-line); }
   .empty-block b { font-family: "Space Grotesk", system-ui, sans-serif; font-size: 15px; font-weight: 600; color: var(--ink-2); }
   .empty-block p { font-size: 13px; color: var(--muted); margin-top: 5px; }
-  .table-foot { display: flex; justify-content: space-between; gap: 8px; padding: 14px 12px 2px; font-size: 12px; color: var(--faint); flex-wrap: wrap; }
+  .table-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 14px 12px 2px; font-size: 12px; color: var(--faint); flex-wrap: wrap; }
+  .pager { display: inline-flex; align-items: center; gap: 8px; }
+  .pager button { height: 26px; padding: 0 10px; border-radius: 7px; border: 1px solid var(--border-2); background: transparent; color: var(--ink-2); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; transition: color .15s ease, border-color .15s ease; }
+  .pager button:hover:not(:disabled) { color: var(--ink); border-color: var(--accent-border); }
+  .pager button:disabled { opacity: .38; cursor: default; }
+  .pager .pageinfo { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 11.5px; color: var(--muted); }
 
   .aside { display: flex; flex-direction: column; gap: 14px; }
   .addsrc { display: flex; gap: 8px; margin: 10px 0 4px; }
@@ -281,6 +286,11 @@
       </div>
       <div class="table-foot">
         <span id="foot-count">sorted by deadline</span>
+        <span class="pager" id="pager" hidden>
+          <button id="page-prev" type="button">&lsaquo; Prev</button>
+          <span class="pageinfo" id="pageinfo"></span>
+          <button id="page-next" type="button">Next &rsaquo;</button>
+        </span>
         <span>powered by Bright Data Scraper Studio</span>
       </div>
     </section>
@@ -373,6 +383,12 @@ function revealTokenBox(focus) {
   if (focus) document.getElementById("tok").focus();
 }
 let runState = "idle", runTimer = null, runTick = 0;
+/* The table renders one page at a time; filtering, search and the deadline
+   sort still run across every loaded row, so paging never hides a match.
+   ponytail: rows are paged in the browser, not the query — fine up to the
+   API's 500-row ceiling; move offset into SQL if the store outgrows it. */
+const PAGE_SIZE = 100;
+let page = 0, totalCount = 0;
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
@@ -388,7 +404,17 @@ function renderRows() {
     .filter(it => !activeCategory || it.category === activeCategory)
     .filter(it => !q || (it.title + " " + (it.organization || "")).toLowerCase().includes(q))
     .sort((a, b) => sortKey(a) - sortKey(b));
-  document.getElementById("rows").innerHTML = items.map(it => {
+  const pageCount = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+  if (page >= pageCount) page = pageCount - 1;
+  if (page < 0) page = 0;
+  const start = page * PAGE_SIZE;
+  const shown = items.slice(start, start + PAGE_SIZE);
+  const pager = document.getElementById("pager");
+  pager.hidden = pageCount <= 1;
+  document.getElementById("pageinfo").textContent = `page ${page + 1} / ${pageCount}`;
+  document.getElementById("page-prev").disabled = page === 0;
+  document.getElementById("page-next").disabled = page >= pageCount - 1;
+  document.getElementById("rows").innerHTML = shown.map(it => {
     const days = daysLeft(it.deadline);
     const crit = days != null && days >= 0 && days <= 3;
     const warn = days != null && days > 3 && days <= 7;
@@ -411,7 +437,9 @@ function renderRows() {
     </div>`;
   }).join("");
   document.getElementById("empty").hidden = items.length > 0;
-  document.getElementById("foot-count").textContent = `sorted by deadline · ${items.length} shown`;
+  const range = items.length ? `${start + 1}\u2013${start + shown.length} of ${items.length}` : "0";
+  const capped = totalCount > allItems.length ? ` · ${totalCount} tracked` : "";
+  document.getElementById("foot-count").textContent = `sorted by deadline · ${range}${capped}`;
 }
 
 function renderFilters() {
@@ -420,6 +448,7 @@ function renderFilters() {
     <button class="chip" aria-pressed="${cat === activeCategory}" data-cat="${cat ?? ""}">${cat ? esc(cat) + "s" : "All"}</button>`).join("");
   host.querySelectorAll(".chip").forEach(btn => btn.addEventListener("click", () => {
     activeCategory = btn.dataset.cat || null;
+    page = 0;
     renderFilters(); renderRows();
   }));
 }
@@ -491,11 +520,12 @@ function tile(label, value, hint, cls = "") {
 
 async function refresh() {
   const [opps, health, heals] = await Promise.all([
-    fetch("/api/opportunities").then(r => r.json()),
+    fetch("/api/opportunities?limit=500").then(r => r.json()),
     fetch("/api/health").then(r => r.json()),
     fetch("/api/healing-log").then(r => r.json()),
   ]);
   allItems = opps.items;
+  totalCount = opps.count;
   const seen = [...new Set(allItems.map(i => i.category))].sort();
   if (seen.join() !== CATS.join()) { CATS = seen; renderFilters(); }
   renderRows();
@@ -622,7 +652,15 @@ document.getElementById("src-url").addEventListener("keydown", e => {
   if (e.key === "Enter") document.getElementById("src-add").click();
 });
 
-document.getElementById("search").addEventListener("input", e => { query = e.target.value; renderRows(); });
+document.getElementById("search").addEventListener("input", e => { query = e.target.value; page = 0; renderRows(); });
+
+function goPage(delta) {
+  page += delta;
+  renderRows();
+  document.getElementById("rows-scroll").scrollTop = 0;
+}
+document.getElementById("page-prev").addEventListener("click", () => goPage(-1));
+document.getElementById("page-next").addEventListener("click", () => goPage(1));
 
 document.getElementById("keybtn").addEventListener("click", () => {
   const box = document.getElementById("keybox");
