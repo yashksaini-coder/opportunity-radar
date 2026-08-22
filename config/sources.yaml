@@ -42,11 +42,29 @@ sources:
   - id: golang-jobs
     name: GolangProjects — Go Developer Jobs
     url: https://www.golangprojects.com/
-    collector_id: ""
+    collector_id: "c_mt4991p8sdupmz3k1"
     category: job
     description: >
       Extract job postings: title, url, company, location, posted date,
       whether remote, salary if shown.
+
+  - id: hackclub-hackathons
+    name: Hack Club — Community Hackathons
+    url: https://hackathons.hackclub.com/
+    collector_id: ""
+    category: hackathon
+    description: >
+      Extract hackathon events: title, url, start_date, end_date,
+      location, whether in-person or virtual.
+
+  - id: opportunitydesk
+    name: Opportunity Desk — Scholarships & Fellowships
+    url: https://www.opportunitydesk.org/
+    collector_id: "c_mt49950t208b8072y"
+    category: scholarship
+    description: >
+      Extract opportunity listings: title, url, application deadline,
+      host organization, award amount or benefits, location.
 
 # Pipeline health thresholds — a run failing these triggers auto-heal.
 health:
