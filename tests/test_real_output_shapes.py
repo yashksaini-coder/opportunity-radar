@@ -109,3 +109,42 @@ def test_error_record_carrying_a_real_title_is_kept():
     shape = json.dumps([{"error": "partial", "title": "Real Job",
                          "url": "https://example.org/j"}])
     assert len(_parse_rows(shape)) == 1
+
+
+SIDEBAR_SHAPE = json.dumps([
+    {"title": "Whitley Awards 2027 for Grassroots Conservation Leaders (GBP 50,000 prize) "
+              "Mitacs Globalink Research Award (GRA) Program 2026 Hoover Fellows Program 2026",
+     "url": "https://example.org/whitley"},
+    {"title": "Mitacs Globalink Research Award (GRA) Program 2026 Hoover Fellows Program 2026",
+     "url": "https://example.org/mitacs"},
+    {"title": "Hoover Fellows Program 2026 Mitacs Globalink Research Award (GRA) Program 2026",
+     "url": "https://example.org/hoover"},
+])
+
+
+def test_appended_sidebar_listings_are_stripped_from_titles():
+    """One feed glues its related-posts sidebar into every title.
+
+    Real output: 31 of 31 rows averaged 236 characters, each carrying
+    several unrelated listings. Scraper Studio's healer was given a
+    precise diagnosis and could not repair it, so the pipeline cleans it.
+    """
+    rows = _parse_rows(SIDEBAR_SHAPE)
+    opportunities, errors = rows_to_opportunities(rows, "oppdesk", "scholarship")
+    assert not errors
+    titles = [o.title for o in opportunities]
+    assert titles[0] == "Whitley Awards 2027 for Grassroots Conservation Leaders (GBP 50,000 prize)"
+    assert titles[1] == "Mitacs Globalink Research Award (GRA) Program 2026"
+    assert titles[2] == "Hoover Fellows Program 2026"
+
+
+def test_clean_titles_are_left_alone():
+    """The cut must be inert on collectors that behave."""
+    clean = json.dumps([
+        {"title": "Senior Python Engineer at EPAM Systems Incorporated", "url": "https://e.org/1"},
+        {"title": "Staff Backend Engineer at Cast AI Technologies", "url": "https://e.org/2"},
+    ])
+    opportunities, errors = rows_to_opportunities(_parse_rows(clean), "jobs", "job")
+    assert not errors
+    assert opportunities[0].title == "Senior Python Engineer at EPAM Systems Incorporated"
+    assert opportunities[1].title == "Staff Backend Engineer at Cast AI Technologies"

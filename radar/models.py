@@ -100,6 +100,10 @@ def rows_to_opportunities(
     Returns (valid_opportunities, per_row_errors). Rows that fail
     validation are reported, not silently dropped.
     """
+    titles = _strip_appended_listings(
+        [_clean_title(str(row.get("title") or "")) if isinstance(row, dict) else ""
+         for row in rows]
+    )
     valid: list[Opportunity] = []
     errors: list[str] = []
     for index, row in enumerate(rows):
@@ -107,7 +111,7 @@ def rows_to_opportunities(
             errors.append(f"row {index}: not an object")
             continue
         try:
-            title = _clean_title(str(row.get("title") or ""))
+            title = titles[index]
             valid.append(
                 Opportunity(
                     title=title,
@@ -149,6 +153,59 @@ def _clean_title(raw: str) -> str:
         if cleaned:
             return cleaned
     return ""
+
+
+_NEIGHBOUR_PROBE = 28   # how much of another listing's title to look for
+_MIN_TITLE_KEEP = 12    # never cut a title shorter than this
+
+
+def _strip_appended_listings(titles: list[str]) -> list[str]:
+    """Cut titles that have neighbouring listings glued onto them.
+
+    Some feeds render a "related posts" sidebar inside the same element as
+    the title, so every row arrives carrying several other listings — real
+    output seen: 31 of 31 rows averaging 236 characters, each ending in the
+    same run of unrelated titles. Scraper Studio's healer was given a
+    precise diagnosis for this and could not repair it, so the cleanup
+    lands here alongside the other collector-sloppiness fixes.
+
+    The appended fragments are themselves rows in the same batch, which is
+    the signal: cut a title where another row's title begins inside it.
+    Collectors returning clean titles are untouched, since no title
+    contains another one mid-string.
+
+    Two passes: the first can only match against polluted titles, so a
+    fragment sitting at the very end of a title is not recognisable until
+    the vocabulary holds real titles.
+
+    ponytail: O(n^2) per pass over one source's rows; fine at a few
+    hundred, revisit if a single collector ever returns thousands.
+    """
+    once = _cut_appended(titles, titles)
+    return _cut_appended(once, once)
+
+
+def _cut_appended(titles: list[str], vocabulary: list[str]) -> list[str]:
+    """Trim each title at the earliest point another listing starts in it."""
+    heads = [t[:_NEIGHBOUR_PROBE] for t in vocabulary if len(t) >= _NEIGHBOUR_PROBE]
+    cleaned: list[str] = []
+    for title in titles:
+        end = len(title)
+        for head in heads:
+            if head == title[:_NEIGHBOUR_PROBE]:
+                continue  # a duplicate title, not an appended one
+            found = title.find(head, _MIN_TITLE_KEEP)
+            if found != -1:
+                end = min(end, found)
+        for other in vocabulary:
+            # A fragment at the very end has no text after it for the probe
+            # to match against, so look for it as a suffix as well.
+            if other and other != title and title.endswith(other):
+                cut = len(title) - len(other)
+                if cut >= _MIN_TITLE_KEEP:
+                    end = min(end, cut)
+        cleaned.append(title[:end].strip(" -\u2013|\u00b7,"))
+    return cleaned
 
 
 def _clean_org(org: Optional[str], title: str) -> Optional[str]:
