@@ -1,29 +1,72 @@
 {
-  "_comment": "Example structured output from one pipeline run (source: devpost-hackathons). Regenerate with: python -m radar.pipeline --source devpost-hackathons",
-  "source_id": "devpost-hackathons",
-  "collector_id": "c_YOUR_COLLECTOR_ID",
+  "_comment": "Real structured output from the mlh-hackathons collector (brightdata scraper run). Regenerate with: python -m radar.pipeline --source mlh-hackathons",
+  "source_id": "mlh-hackathons",
   "run_status": "ok",
   "rows": [
     {
-      "title": "Into the Scrape-Verse",
-      "url": "https://www.wemakedevs.org/hackathons/scrape-verse",
-      "organization": "WeMakeDevs x Bright Data",
-      "deadline": "2026-08-23",
-      "amount": "$15,000 prize pool",
-      "location": "Online",
+      "title": "HackPrix Season 3",
+      "url": "https://s3.hackprix.tech/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=HackPrix+Season+3",
+      "organization": null,
+      "deadline": "2027-06-13",
+      "amount": null,
+      "location": "Hyderabad, Telangana, IN",
       "category": "hackathon",
-      "source_id": "devpost-hackathons",
-      "tags": ["web-scraping", "ai"]
+      "source_id": "mlh-hackathons",
+      "tags": []
     },
     {
-      "title": "Example Open Hackathon",
-      "url": "https://devpost.com/hackathons/example",
-      "organization": "Example Corp",
-      "deadline": "2026-09-15",
-      "amount": "$5,000",
-      "location": "Online",
+      "title": "JAMHacks 10",
+      "url": "https://jamhacks.ca/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=JAMHacks+10",
+      "organization": null,
+      "deadline": "2027-06-12",
+      "amount": null,
+      "location": "Waterloo, Ontario, CA",
       "category": "hackathon",
-      "source_id": "devpost-hackathons",
+      "source_id": "mlh-hackathons",
+      "tags": []
+    },
+    {
+      "title": "Global Hack Week: Hacking for Good",
+      "url": "https://events.mlh.io/events/14302-global-hack-week-hacking-for-good?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=Global+Hack+Week%3A+Hacking+for+Good",
+      "organization": null,
+      "deadline": "2027-06-12",
+      "amount": null,
+      "location": "Everywhere, Worldwide",
+      "category": "hackathon",
+      "source_id": "mlh-hackathons",
+      "tags": []
+    },
+    {
+      "title": "Hack4Her",
+      "url": "https://www.hack4her.com/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=Hack4Her",
+      "organization": null,
+      "deadline": "2027-06-06",
+      "amount": null,
+      "location": "Monterrey, Nuevo Leon, MX",
+      "category": "hackathon",
+      "source_id": "mlh-hackathons",
+      "tags": []
+    },
+    {
+      "title": "MPC Hacks",
+      "url": "https://mpchacks.com/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=MPC+Hacks",
+      "organization": null,
+      "deadline": "2027-05-30",
+      "amount": null,
+      "location": "Montreal, Quebec, CA",
+      "category": "hackathon",
+      "source_id": "mlh-hackathons",
+      "tags": []
+    },
+    {
+      "title": "Quackhacks 3",
+      "url": "https://www.quackhacks.org/?utm_source=mlh&utm_medium=referral&utm_campaign=events&utm_content=Quackhacks+3",
+      "organization": null,
+      "deadline": "2027-05-30",
+      "amount": null,
+      "location": "Eugene, Oregon, US",
+      "category": "hackathon",
+      "source_id": "mlh-hackathons",
       "tags": []
     }
   ]

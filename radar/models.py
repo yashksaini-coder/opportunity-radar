@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -106,22 +107,101 @@ def rows_to_opportunities(
             errors.append(f"row {index}: not an object")
             continue
         try:
+            title = _clean_title(str(row.get("title") or ""))
             valid.append(
                 Opportunity(
-                    title=str(row.get("title") or ""),
+                    title=title,
                     url=str(row.get("url") or row.get("link") or ""),
-                    organization=_opt_str(row, "organization", "host", "company"),
-                    deadline=_opt_str(row, "deadline", "submission_deadline", "application_deadline", "start_date"),
+                    organization=_clean_org(
+                        _opt_str(row, "organization", "host", "company"), title
+                    ),
+                    deadline=_normalize_deadline(
+                        _opt_str(row, "deadline", "submission_deadline",
+                                 "application_deadline", "start_date")
+                    ),
                     amount=_opt_str(row, "amount", "prize", "prize_amount", "stipend", "salary"),
-                    location=_opt_str(row, "location"),
+                    location=_opt_str(row, "location") or _location_from_description(row),
                     category=category,
                     source_id=source_id,
-                    tags=[str(t) for t in row.get("tags") or row.get("themes") or []],
+                    tags=[str(t) for t in row.get("tags") or row.get("themes")
+                          or row.get("job_types") or []],
                 )
             )
         except ValueError as exc:
             errors.append(f"row {index}: {exc}")
     return valid, errors
+
+
+def _clean_title(raw: str) -> str:
+    """First non-empty line, whitespace collapsed.
+
+    Some collectors glue the company under the title across newlines
+    ('Senior Python Engineer\\n ... \\n EPAM'); the real title is line 1.
+    """
+    for line in raw.splitlines():
+        cleaned = " ".join(line.split())
+        if cleaned:
+            return cleaned
+    return ""
+
+
+def _clean_org(org: Optional[str], title: str) -> Optional[str]:
+    """Collapse whitespace; strip a duplicated title prefix.
+
+    Real output seen: company='Senior Python Engineer  EPAM' when
+    title='Senior Python Engineer' — the org is what remains.
+    """
+    if not org:
+        return None
+    cleaned = " ".join(org.split())
+    if title and cleaned.lower().startswith(title.lower()):
+        cleaned = cleaned[len(title):].strip(" -·|")
+    return cleaned or None
+
+
+_MONTHS = {m: i + 1 for i, m in enumerate(
+    ["jan", "feb", "mar", "apr", "may", "jun",
+     "jul", "aug", "sep", "oct", "nov", "dec"])}
+_MONTH_DAY_RE = re.compile(r"^([A-Za-z]{3,9})\.?\s+(\d{1,2})$")
+
+
+def _normalize_deadline(raw: Optional[str]) -> Optional[str]:
+    """Turn 'JUN 13'-style dates (no year) into ISO dates.
+
+    The year is inferred: current year, rolled forward when the date
+    would be more than ~6 weeks in the past (listing sites publish
+    upcoming dates). Anything already parseable is passed through.
+    """
+    if not raw:
+        return None
+    value = raw.strip()
+    match = _MONTH_DAY_RE.match(value)
+    if not match:
+        return value
+    month = _MONTHS.get(match.group(1).lower()[:3])
+    day = int(match.group(2))
+    if not month or not 1 <= day <= 31:
+        return value
+    today = datetime.now(timezone.utc).date()
+    try:
+        candidate = today.replace(month=month, day=day)
+    except ValueError:
+        return value
+    if (today - candidate).days > 45:
+        candidate = candidate.replace(year=candidate.year + 1)
+    return candidate.isoformat()
+
+
+_PAREN_PREFIX_RE = re.compile(r"^\(([^)]{2,40})\)")
+
+
+def _location_from_description(row: dict[str, Any]) -> Optional[str]:
+    """Scholarship feeds often lead the description with '(UK) …'."""
+    description = row.get("description")
+    if not isinstance(description, str):
+        return None
+    match = _PAREN_PREFIX_RE.match(description.strip())
+    return match.group(1) if match else None
 
 
 def _opt_str(row: dict[str, Any], *keys: str) -> Optional[str]:

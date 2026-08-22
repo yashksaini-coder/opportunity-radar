@@ -14,7 +14,7 @@
 sources:
   - id: mlh-hackathons
     name: MLH — 2026 Season Events
-    url: https://www.mlh.com/seasons/2026/events
+    url: https://www.mlh.com/seasons/2027/events
     collector_id: ""            # <- paste c_* id after `brightdata scraper create`
     category: hackathon
     description: >

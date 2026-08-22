@@ -87,10 +87,12 @@ def heal_scraper(
 
 
 def _parse_rows(stdout: str) -> list[dict[str, Any]]:
-    """Parse CLI output into a list of row dicts.
+    """Parse CLI output into a flat list of row dicts.
 
-    The CLI prints a JSON array (one row per result). Be tolerant of
-    log lines before/after the JSON payload.
+    The CLI prints a JSON array, but collectors differ in shape (all
+    seen in real runs): flat rows; rows nested under a list key like
+    "events" or "scholarships"; and wrapper elements that carry only
+    an "input" echo and empty nested lists. Flatten all of them.
     """
     text = stdout.strip()
     if not text:
@@ -109,4 +111,31 @@ def _parse_rows(stdout: str) -> list[dict[str, Any]]:
         parsed = parsed.get("data", parsed.get("results", [parsed]))
     if not isinstance(parsed, list):
         raise BrightDataError(f"Unexpected CLI output shape: {type(parsed).__name__}")
-    return [row for row in parsed if isinstance(row, dict)]
+
+    rows: list[dict[str, Any]] = []
+    for element in parsed:
+        if isinstance(element, dict):
+            rows.extend(_flatten_element(element))
+    return rows
+
+
+_ROW_MARKERS = ("title", "url", "link", "name")
+
+
+def _flatten_element(element: dict[str, Any]) -> list[dict[str, Any]]:
+    """Turn one top-level element into zero or more row dicts."""
+    nested = [
+        value for key, value in element.items()
+        if isinstance(value, list) and value and all(isinstance(x, dict) for x in value)
+    ]
+    if nested:  # e.g. {"events": [...]} or {"scholarships": [...]}
+        return [
+            {k: v for k, v in row.items() if k != "input"}
+            for rows in nested for row in rows
+        ]
+    has_empty_list = any(
+        isinstance(v, list) and not v for k, v in element.items() if k != "input"
+    )
+    if has_empty_list and not any(k in element for k in _ROW_MARKERS):
+        return []  # wrapper that crawled a page with no listings
+    return [{k: v for k, v in element.items() if k != "input"}]
