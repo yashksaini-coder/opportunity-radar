@@ -14,3 +14,6 @@ venv/
 .vscode/
 .idea/
 .DS_Store
+
+# private working docs (submission drafts, scripts) — keep out of the public repo
+docs/
