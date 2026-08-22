@@ -7,7 +7,7 @@ import re
 from datetime import datetime, timezone
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, ValidationError, field_validator
 
 
 class Opportunity(BaseModel):
@@ -127,6 +127,12 @@ def rows_to_opportunities(
                           or row.get("job_types") or []],
                 )
             )
+        except ValidationError as exc:
+            # Pydantic's full text runs ~400 chars per row (it embeds docs
+            # URLs). The healer only needs to know which fields are bad,
+            # and the heal prompt has a hard 1000-char API limit.
+            fields = ", ".join(sorted({str(e["loc"][0]) for e in exc.errors() if e.get("loc")}))
+            errors.append(f"row {index}: blank or invalid {fields or 'field'}")
         except ValueError as exc:
             errors.append(f"row {index}: {exc}")
     return valid, errors

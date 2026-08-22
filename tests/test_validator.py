@@ -59,3 +59,26 @@ def test_heal_prompt_contains_diagnosis_and_schema():
     prompt = build_heal_prompt(report, "titles and urls of scholarships")
     assert "zero rows" in prompt
     assert "titles and urls of scholarships" in prompt
+
+
+def test_heal_prompt_never_exceeds_the_api_limit():
+    """`brightdata scraper heal` rejects prompts over 1000 chars outright.
+
+    A verbose diagnosis used to blow past it, so the heal died before
+    Bright Data ever saw the request.
+    """
+    from radar.validator import MAX_HEAL_PROMPT_CHARS
+
+    rows = _rows(10)
+    for row in rows:
+        row["title"] = None
+    report = validate_run(rows, THRESHOLDS, row_errors=["row %d: blah blah" % i for i in range(400)])
+    prompt = build_heal_prompt(report, "titles and urls of scholarships " * 30)
+    assert len(prompt) <= MAX_HEAL_PROMPT_CHARS
+
+
+def test_short_heal_prompt_is_left_intact():
+    report = validate_run([], THRESHOLDS)
+    prompt = build_heal_prompt(report, "titles and urls")
+    assert prompt.endswith("populated.")
+    assert "zero rows" in prompt

@@ -13,6 +13,10 @@ from typing import Any
 from .config import HealthThresholds
 from .models import ValidationReport
 
+# `brightdata scraper heal` rejects prompts over this length outright, so a
+# verbose diagnosis silently costs us the repair we were trying to make.
+MAX_HEAL_PROMPT_CHARS = 1000
+
 
 def validate_run(
     rows: list[dict[str, Any]],
@@ -64,11 +68,16 @@ def build_heal_prompt(report: ValidationReport, expected_schema: str) -> str:
     Factual, specific, and states the expected output — exactly the
     kind of prompt `brightdata scraper heal` works best with.
     """
-    return (
-        f"The scraper output failed validation: {report.diagnosis()}. "
-        f"The site layout may have changed. Expected output: {expected_schema}. "
+    head = "The scraper output failed validation: "
+    tail = (
+        f". The site layout may have changed. Expected output: {expected_schema}. "
         "Please repair the extraction so all expected fields are populated."
     )
+    budget = MAX_HEAL_PROMPT_CHARS - len(head) - len(tail)
+    diagnosis = report.diagnosis()
+    if budget > 1 and len(diagnosis) > budget:
+        diagnosis = diagnosis[: budget - 1] + "\u2026"
+    return (head + diagnosis + tail)[:MAX_HEAL_PROMPT_CHARS]
 
 
 def _has_value(row: dict[str, Any], field: str) -> bool:
