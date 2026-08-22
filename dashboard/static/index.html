@@ -335,13 +335,16 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const hostOf = u => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return ""; } };
 const fmtDate = raw => { const d = new Date(raw); return isNaN(d) ? esc(raw) : d.toLocaleDateString("en", { month: "short", day: "2-digit" }); };
 const daysLeft = raw => { if (!raw) return null; const d = new Date(raw); return isNaN(d) ? null : Math.ceil((d - Date.now()) / 86400000); };
+/* Order: soonest upcoming first, then rolling (no deadline), then expired
+   last — an expired listing has a negative day count and must never lead. */
+const sortKey = it => { const n = daysLeft(it.deadline); return n == null ? 1e6 : n < 0 ? 1e9 - n : n; };
 
 function renderRows() {
   const q = query.toLowerCase();
   const items = allItems
     .filter(it => !activeCategory || it.category === activeCategory)
     .filter(it => !q || (it.title + " " + (it.organization || "")).toLowerCase().includes(q))
-    .sort((a, b) => (daysLeft(a.deadline) ?? 9e9) - (daysLeft(b.deadline) ?? 9e9));
+    .sort((a, b) => sortKey(a) - sortKey(b));
   document.getElementById("rows").innerHTML = items.map(it => {
     const days = daysLeft(it.deadline);
     const crit = days != null && days >= 0 && days <= 3;
