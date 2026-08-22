@@ -65,7 +65,7 @@ jobs:
             echo "seed unchanged — nothing to commit"
             exit 0
           fi
-          git commit -m "chore: refresh deploy seed from nightly scrape"
+          git commit -m "chore: refresh seed"
           git push
 
       - name: Upload scraped data snapshot
