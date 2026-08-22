@@ -39,6 +39,15 @@ sources:
       Extract job postings: title, url, company, location, posted date,
       job types.
 
+  - id: golang-jobs
+    name: GolangProjects — Go Developer Jobs
+    url: https://www.golangprojects.com/
+    collector_id: ""
+    category: job
+    description: >
+      Extract job postings: title, url, company, location, posted date,
+      whether remote, salary if shown.
+
 # Pipeline health thresholds — a run failing these triggers auto-heal.
 health:
   min_rows: 3 # fewer rows than this = suspicious
