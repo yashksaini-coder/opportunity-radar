@@ -65,6 +65,22 @@ async def unhandled_error(request: Request, exc: Exception) -> JSONResponse:
     return JSONResponse({"detail": "internal error"}, status_code=500)
 
 
+def _token_ok(supplied: str | None) -> bool:
+    """True when no token is configured, or the supplied one matches.
+
+    Local runs leave RADAR_RUN_TOKEN empty so the dashboard just works;
+    a public deploy sets it and both mutating endpoints require it.
+    """
+    required = os.environ.get("RADAR_RUN_TOKEN", "")
+    return not required or hmac.compare_digest(required, supplied or "")
+
+
+@app.get("/api/config")
+def config() -> dict:
+    """What the page needs to render itself — never the token value."""
+    return {"run_token_required": bool(os.environ.get("RADAR_RUN_TOKEN", ""))}
+
+
 def _store() -> Store:
     """One connection per request keeps SQLite happy across threads."""
     return Store(load_settings().db_path)
@@ -116,7 +132,9 @@ class NewSource(BaseModel):
 
 
 @app.post("/api/sources", status_code=201)
-def add_source(body: NewSource) -> JSONResponse:
+def add_source(
+    body: NewSource, x_run_token: str | None = Header(default=None)
+) -> JSONResponse:
     """Register a new scrape target from the dashboard.
 
     The URL passes the same validation as sources.yaml (http(s) only,
@@ -124,6 +142,9 @@ def add_source(body: NewSource) -> JSONResponse:
     config/sources.extra.yaml as 'queued' until a Scraper Studio
     collector is created for it.
     """
+    if not _token_ok(x_run_token):
+        return JSONResponse({"detail": "run token required"}, status_code=401)
+
     settings = load_settings()
     try:
         source = make_source_from_url(body.url, {s.id for s in settings.sources})
@@ -148,8 +169,7 @@ def run_pipeline(x_run_token: str | None = Header(default=None)) -> JSONResponse
     """
     global _pipeline_proc, _last_run_started
 
-    required = os.environ.get("RADAR_RUN_TOKEN", "")
-    if required and not hmac.compare_digest(required, x_run_token or ""):
+    if not _token_ok(x_run_token):
         return JSONResponse({"detail": "run token required"}, status_code=401)
 
     if _pipeline_proc is not None and _pipeline_proc.poll() is None:
