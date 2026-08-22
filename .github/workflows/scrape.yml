@@ -12,7 +12,7 @@ on:
   workflow_dispatch: {}      # manual trigger for demos
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: nightly-scrape
@@ -47,6 +47,27 @@ jobs:
       - name: Write run summary (rows, statuses, healing events)
         if: always()
         run: python scripts/ci_summary.py >> "$GITHUB_STEP_SUMMARY"
+      # Close the loop: the deployed dashboard reads a committed snapshot
+      # (data/seed.db), because free-tier hosts have no persistent disk and
+      # reset to the image on every cold start. Pushing the refreshed store
+      # here is what makes last night's finds — and any healing event — show
+      # up on the public site instead of living only in the Actions cache.
+      # continue-on-error: a push problem must never mask the scrape result.
+      - name: Refresh the deploy seed
+        if: always()
+        continue-on-error: true
+        run: |
+          cp data/radar.db data/seed.db
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/seed.db
+          if git diff --staged --quiet; then
+            echo "seed unchanged — nothing to commit"
+            exit 0
+          fi
+          git commit -m "chore: refresh deploy seed from nightly scrape"
+          git push
+
       - name: Upload scraped data snapshot
         if: always()
         uses: actions/upload-artifact@v4
