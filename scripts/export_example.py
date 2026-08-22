@@ -35,7 +35,8 @@ def main() -> None:
         by_source: dict[str, list[dict]] = {}
         for item in items:
             by_source.setdefault(item["source_id"], []).append(item)
-        items = [item for group in by_source.values() for item in group[:3]]
+        per_source = max(1, 12 // max(1, len(by_source)))
+        items = [item for group in by_source.values() for item in group[:per_source]]
 
     out = {
         "_comment": (
@@ -46,7 +47,7 @@ def main() -> None:
         "source_id": source_id or "all",
         "rows": [
             {k: v for k, v in item.items() if k not in ("fingerprint", "first_seen", "last_seen")}
-            for item in items[:8]
+            for item in items[:12]
         ],
     }
     path = Path(__file__).resolve().parent.parent / "data" / "example_output.json"

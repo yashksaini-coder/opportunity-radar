@@ -21,7 +21,7 @@ run-one:        ## run one source: make run-one SOURCE=mlh-hackathons
 	$(PY) -m radar.pipeline --source $(SOURCE)
 
 demo-heal:      ## simulate a site redesign and watch the radar heal itself
-	$(PY) -m radar.pipeline --simulate-breakage $(SOURCE)
+	$(PY) -m radar.pipeline --source $(SOURCE) --simulate-breakage $(SOURCE)
 
 dashboard:      ## serve the dashboard at http://localhost:8000
 	$(PY) -m uvicorn dashboard.app:app --reload
