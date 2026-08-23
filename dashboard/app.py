@@ -30,6 +30,7 @@ from pydantic import BaseModel, Field
 
 from radar.config import (
     PROJECT_ROOT,
+    _load_dotenv,
     append_extra_source,
     load_settings,
     make_source_from_url,
@@ -39,6 +40,11 @@ from radar.store import Store
 from .security import RateLimitMiddleware, SecurityHeadersMiddleware
 
 logger = logging.getLogger(__name__)
+
+# .env is otherwise only read as a side effect of load_settings(), so a
+# request arriving before the first one would see an unset RADAR_RUN_TOKEN
+# — the key control would not render, and a run could start ungated.
+_load_dotenv()
 
 app = FastAPI(title="Opportunity Radar", version="0.1.0", docs_url=None, redoc_url=None)
 app.add_middleware(RateLimitMiddleware)
