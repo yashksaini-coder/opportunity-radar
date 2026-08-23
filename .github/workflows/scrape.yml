@@ -36,12 +36,13 @@ jobs:
           node-version: "20"
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Restore previous radar database
-        uses: actions/cache@v4
-        with:
-          path: data/radar.db
-          key: radar-db-${{ github.run_id }}
-          restore-keys: radar-db-
+      # Continue from the committed seed rather than a cache. The cache
+      # lineage reached back to before the sources were retargeted, so it
+      # kept resurrecting run records for collectors that no longer exist
+      # and overwriting the seed with a store that had never healed. Its
+      # key was per-run, so it could never hit on purpose anyway.
+      - name: Continue from the committed store
+        run: cp data/seed.db data/radar.db
       - name: Run the pipeline (self-heals on breakage)
         run: python -m radar.pipeline
       - name: Write run summary (rows, statuses, healing events)
