@@ -81,6 +81,9 @@
   .keybox input { width: 190px; height: 42px; padding: 0 12px; border-radius: 9px 0 0 9px; border: 1px solid var(--border-2); border-right: 0; background: var(--surface); color: var(--ink); font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 12px; outline: none; }
   .keybox input:focus { border-color: var(--accent-border); }
   .keybox button { height: 42px; padding: 0 12px; border-radius: 0 9px 9px 0; border: 1px solid var(--accent-border); background: var(--accent-chip-bg); color: var(--accent-text); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+  .keyhint { margin-left: 10px; font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .keyhint a { color: var(--accent-text); text-decoration: none; border-bottom: 1px solid var(--accent-border); }
+  .keyhint a:hover { color: var(--ink); }
   .ghlink.keybtn.set { color: var(--good); border-color: var(--good); }
   .ghlink { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; border-radius: 9px; border: 1px solid var(--border-2); background: var(--surface); color: var(--ink-2); transition: color .15s ease, border-color .15s ease; }
   .ghlink:hover { color: var(--ink); border-color: var(--accent-border); }
@@ -250,10 +253,14 @@
     <span class="keybox" id="keybox">
       <input id="tok" type="password" placeholder="run token" aria-label="Run token" autocomplete="off">
       <button id="tok-save" type="button">Save</button>
+      <span class="keyhint">runs are limited &middot; <a href="https://x.com/0xcrackedDev" target="_blank" rel="noopener">request access</a></span>
     </span>
-    <button class="ghlink keybtn" id="keybtn" type="button" hidden aria-label="Set run token" title="Set run token">
+    <button class="ghlink keybtn" id="keybtn" type="button" hidden aria-label="Enter run token" title="Runs are limited — enter a token, or request access">
       <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M21 2l-2 2m-7.6 7.6a5 5 0 11-7.1 7.1 5 5 0 017.1-7.1zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3"/></svg>
     </button>
+    <a class="ghlink" href="https://x.com/0xcrackedDev" target="_blank" rel="noopener" aria-label="Author on X" title="Author on X">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
     <a class="ghlink" href="https://github.com/yashksaini-coder/opportunity-radar" target="_blank" rel="noopener" aria-label="View source on GitHub" title="View source on GitHub">
       <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.4 7.4 0 014 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
     </a>
@@ -376,7 +383,8 @@ const authHeaders = () => { const t = getTok(); return t ? { "X-Run-Token": t } 
 function markTokenState() {
   const btn = document.getElementById("keybtn");
   btn.classList.toggle("set", !!getTok());
-  btn.title = getTok() ? "Run token saved — click to change" : "Set run token";
+  btn.title = getTok() ? "Run token saved — click to change"
+                      : "Runs are limited — enter a token, or request access";
 }
 function revealTokenBox(focus) {
   document.getElementById("keybox").classList.add("on");
@@ -615,7 +623,7 @@ document.getElementById("run-btn").addEventListener("click", async () => {
     clearInterval(runTimer);
     setRunUI("blocked");
     document.getElementById("run-label").textContent =
-      res && res.status === 429 ? "Cooling down…" : res && res.status === 401 ? "Token needed" : "Failed — see logs";
+      res && res.status === 429 ? "Cooling down…" : res && res.status === 401 ? "Runs restricted" : "Failed — see logs";
     if (res && res.status === 401) revealTokenBox(true);
     setTimeout(() => setRunUI("idle"), 4000);
     return;
