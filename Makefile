@@ -1,13 +1,16 @@
 .PHONY: install run run-one demo-heal dashboard test
 
-# Pick an interpreter that actually has the deps, in order of preference:
-# the project venv, then `uv run`, then whatever python3 is on PATH.
-# Everything is invoked as `$(PY) -m <tool>` so nothing needs to be on PATH.
-PY := $(shell if [ -x .venv/bin/python ]; then echo .venv/bin/python; \
-              elif command -v uv >/dev/null 2>&1; then echo "uv run python"; \
+# Prefer uv, which resolves the project venv on its own. Fall back to the
+# venv directly, then to python3 for machines with neither.
+#
+# Note for Arch-based systems (Omarchy): system Python ships PEP 668
+# EXTERNALLY-MANAGED, so `pip install` against it is refused. Everything
+# here stays inside .venv, and `make install` never touches system Python.
+PY := $(shell if command -v uv >/dev/null 2>&1; then echo "uv run python"; \
+              elif [ -x .venv/bin/python ]; then echo .venv/bin/python; \
               else echo python3; fi)
 
-install:        ## create .venv and install deps (uses uv when available)
+install:        ## create .venv and install dependencies
 	@if command -v uv >/dev/null 2>&1; then \
 	  uv venv --allow-existing && uv pip install -r requirements.txt; \
 	else \
@@ -20,7 +23,7 @@ run:            ## run the full pipeline across all sources
 run-one:        ## run one source: make run-one SOURCE=mlh-hackathons
 	$(PY) -m radar.pipeline --source $(SOURCE)
 
-demo-heal:      ## simulate a site redesign and watch the radar heal itself
+demo-heal:      ## break one source and watch the radar heal it
 	$(PY) -m radar.pipeline --source $(SOURCE) --simulate-breakage $(SOURCE)
 
 dashboard:      ## serve the dashboard at http://localhost:8000
