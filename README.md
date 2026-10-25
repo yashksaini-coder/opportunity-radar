@@ -26,11 +26,11 @@
 </p>
 
 <p align="center">
-  <img src="docs/img/heal-demo.gif" alt="Terminal recording of python -m radar.pipeline --source mlh-hackathons --simulate-breakage mlh-hackathons: the scrape returns zero rows, the healer logs the red line 'Healing mlh-hackathons: the scraper returned zero rows — extraction likely broken', the pipeline calls brightdata scraper heal with the generated prompt, re-runs, logs the Spider-sense alert '[telegram disabled] … Outcome: healed (0→24 rows, 4s)' and ends with the green line 'mlh-hackathons: healed (24 rows, 24 new)'">
+  <img src="docs/img/heal-demo.gif" alt="Terminal recording of python -m radar.pipeline --source mlh-hackathons against a stubbed CLI: the scrape returns zero rows, the healer logs the red line 'Healing mlh-hackathons: the scraper returned zero rows — extraction likely broken', the pipeline calls brightdata scraper heal with the generated prompt, re-runs, logs the Spider-sense alert '[telegram disabled] … Outcome: healed (0→24 rows, 4s)' and ends with the green line 'mlh-hackathons: healed (24 rows, 24 new)'">
 </p>
 
 > [!NOTE]
-> The recording above runs the real pipeline, validator, healer, SQLite store and notifier, but the Bright Data CLI is **stubbed** (`subprocess.run` inside `radar/brightdata.py` is replaced, nothing touches the network): the first run returns zero rows, the heal returns ok, the second run replays `raw_output/mlh_run.json`, a saved real CLI output with 24 events. The pauses are artificial. The real production heal on 2026-10-22 went 0 → 92 rows and took 452 s. Regenerate it with `uv run python scripts/record_heal_demo.py`.
+> The recording above runs the real pipeline, validator, healer, SQLite store and notifier, but the Bright Data CLI is **stubbed** (`subprocess.run` inside `radar/brightdata.py` is replaced, nothing touches the network): the first `scraper run` returns zero rows (standing in for a broken site), the heal returns ok, the second run replays `raw_output/mlh_run.json`, a saved real CLI output with 24 events. The pauses are artificial. The real production heal on 2026-10-22 went 0 → 92 rows and took 452 s. Regenerate it with `uv run python scripts/record_heal_demo.py`.
 
 ## Live
 
