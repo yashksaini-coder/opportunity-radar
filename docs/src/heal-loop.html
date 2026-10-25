@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>Opportunity Radar heal loop</title>
+<style>
+@font-face{font-family:"Noto Sans";font-weight:400;src:url("file:///usr/share/fonts/noto/NotoSans-Regular.ttf")}
+@font-face{font-family:"Noto Sans";font-weight:500;src:url("file:///usr/share/fonts/noto/NotoSans-Medium.ttf")}
+@font-face{font-family:"Noto Sans";font-weight:700;src:url("file:///usr/share/fonts/noto/NotoSans-Bold.ttf")}
+@font-face{font-family:"JBM";font-weight:400;src:url("file:///usr/share/fonts/TTF/JetBrainsMonoNerdFont-Regular.ttf")}
+@font-face{font-family:"JBM";font-weight:700;src:url("file:///usr/share/fonts/TTF/JetBrainsMonoNerdFont-Bold.ttf")}
+:root{--page:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--border:rgba(11,11,11,.16);
+ --accent:#2a78d6;--accent-soft:rgba(42,120,214,.10);--good:#0ca30c;--good-text:#006300;--good-bg:rgba(12,163,12,.10);
+ --crit:#d03b3b;--crit-bg:rgba(208,59,59,.08);--amber:#f5c95f;--warn-text:#7a5c00;--warn-bg:rgba(250,178,25,.22)}
+*{box-sizing:border-box;margin:0}
+html,body{width:1280px;height:560px;overflow:hidden}
+body{background:var(--page);color:var(--ink);font-family:"Noto Sans",sans-serif;font-size:15px;line-height:1.3;position:relative}
+.mono{font-family:"JBM",monospace}
+h1{position:absolute;left:40px;top:34px;font-size:27px;font-weight:700;letter-spacing:-.02em}
+.sub{position:absolute;right:40px;top:42px;font-size:15px;color:var(--ink2)}
+.box{position:absolute;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.box b{font-size:17px;font-weight:700}
+.box .d{font-size:15px;color:var(--ink2)}
+.box .m{font-family:"JBM",monospace;font-size:15px;color:var(--ink)}
+.box.strong{border-color:var(--ink);border-width:2px}
+.box.accent{border-color:var(--accent);border-width:2px;background:var(--accent-soft)}
+.box.crit{border-color:var(--crit);background:var(--crit-bg)}
+.box.out{background:var(--good-bg);border-color:var(--good)}
+.box.log{flex-direction:row;align-items:center;gap:14px;padding:10px 16px}
+.chip{display:inline-block;padding:1px 9px;border-radius:999px;font-weight:700;font-size:15px}
+.chip.ok{background:var(--good-bg);color:var(--good-text);border:1px solid var(--good)}
+.chip.bad{background:var(--crit-bg);color:var(--crit);border:1px solid var(--crit)}
+.lbl{position:absolute;font-family:"JBM",monospace;font-size:15px;font-weight:700;background:var(--page);padding:0 4px}
+.lbl.ok{color:var(--good-text)} .lbl.bad{color:var(--crit)} .lbl.mu{color:var(--ink2);font-weight:400}
+svg{position:absolute;inset:0;width:1280px;height:560px;pointer-events:none}
+svg path{fill:none;stroke:var(--ink2);stroke-width:2}
+svg path.ok{stroke:var(--good)} svg path.bad{stroke:var(--crit)} svg path.ac{stroke:var(--accent)}
+</style></head><body>
+
+<h1>How the self-healing loop works</h1>
+<div class="sub mono">radar/pipeline.py · one pass per source · nightly 03:00 IST</div>
+
+<svg viewBox="0 0 1280 560">
+ <defs>
+  <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#52514e" stroke="none"/></marker>
+  <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#0ca30c" stroke="none"/></marker>
+  <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#d03b3b" stroke="none"/></marker>
+  <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2a78d6" stroke="none"/></marker>
+ </defs>
+ <!-- top row -->
+ <path d="M250 175H290" marker-end="url(#a)"/>
+ <path class="ok" d="M590 175H670" marker-end="url(#ag)"/>
+ <path d="M890 175H915V144H940" marker-end="url(#a)"/>
+ <path d="M915 175V206H940" marker-end="url(#a)"/>
+ <!-- unhealthy down -->
+ <path class="bad" d="M400 230V350" marker-end="url(#ar)"/>
+ <!-- bottom row -->
+ <path class="ac" d="M580 405H630" marker-end="url(#ab)"/>
+ <path class="ac" d="M880 405H930" marker-end="url(#ab)"/>
+ <path class="ac" d="M1030 405H1080" marker-end="url(#ab)"/>
+ <!-- loop back into validator -->
+ <path class="ac" d="M1160 350V295H500V230" marker-end="url(#ab)"/>
+ <!-- side output -->
+ <path d="M1160 460V490" marker-end="url(#a)"/>
+</svg>
+
+<!-- top row -->
+<div class="box" style="left:40px;top:120px;width:210px;height:110px">
+ <span class="m">sources.yaml</span>
+ <span class="d">5 collectors, one url each</span>
+ <span class="m">brightdata<br>scraper run</span>
+</div>
+<div class="box strong" style="left:290px;top:120px;width:300px;height:110px">
+ <b>Validator</b>
+ <span class="d">schema + health thresholds</span>
+ <span class="m">min_rows 3 · null ≤ 40%<br>title, url required</span>
+</div>
+<div class="lbl ok" style="left:596px;top:150px">healthy</div>
+<div class="box" style="left:670px;top:120px;width:220px;height:110px">
+ <b>SQLite store</b>
+ <span class="d">dedup by fingerprint</span>
+ <span class="m">sha1(source|title|url)</span>
+</div>
+<div class="box out" style="left:940px;top:120px;width:220px;height:48px"><b>Dashboard</b></div>
+<div class="box out" style="left:940px;top:182px;width:220px;height:48px"><b>Telegram alert</b></div>
+
+<!-- branch labels -->
+<div class="lbl bad" style="left:292px;top:280px">unhealthy</div>
+<div class="lbl mu" style="left:700px;top:284px">back through the validator</div>
+
+<!-- bottom row: the loop -->
+<div class="box crit" style="left:300px;top:350px;width:280px;height:110px">
+ <b>Diagnosis <span class="d" style="font-weight:500">(machine-written)</span></b>
+ <span class="d">“the scraper returned zero rows —<br>extraction likely broken”</span>
+</div>
+<div class="box accent" style="left:630px;top:350px;width:250px;height:110px">
+ <span class="m" style="font-weight:700">brightdata scraper heal</span>
+ <span class="m">--auto-approve</span>
+ <span class="d">prompt = diagnosis + expected output</span>
+</div>
+<div class="box accent" style="left:930px;top:350px;width:100px;height:110px"><b>re-run</b></div>
+<div class="box accent" style="left:1080px;top:350px;width:160px;height:110px"><b>re-validate</b><span class="d">healed or failed</span></div>
+
+<!-- side output: spider-sense log with the real event -->
+<div class="box log" style="left:290px;top:490px;width:950px;height:50px;justify-content:flex-start">
+ <b style="font-size:15px;white-space:nowrap">Spider-sense log</b>
+ <span class="m" style="white-space:nowrap">2026-10-22 · mlh-hackathons · 0 → 92 rows ·</span>
+ <span class="chip ok">HEALED</span><span class="m" style="white-space:nowrap">in 452 s</span>
+</div>
+
+<!-- note -->
+<div class="box" style="left:40px;top:350px;width:210px;height:190px;border-style:dashed;gap:10px">
+ <span class="d"><b style="font-size:15px;color:var(--ink)">Unhealthy means</b><br>0 rows · fewer than 3 rows · a required field null in &gt; 40% · schema failures</span>
+ <span class="d">If the heal fails, <span class="chip bad">FAILED</span> is logged too; the pipeline moves on and exits 1.</span>
+</div>
+</body></html>
