@@ -34,7 +34,8 @@
 
 ## Live
 
-**Dashboard: https://opportunity-radar-v64k.onrender.com/** (Render free tier, Docker; the first request after idle can take ~30 s).
+> [!WARNING]
+> **The hosted dashboard at https://opportunity-radar-v64k.onrender.com/ is suspended** (as of 2026-10-31 it returns 503). The nightly GitHub Actions job still runs and still commits `data/seed.db`, so the data below keeps refreshing; to browse it, run the dashboard locally with `make dashboard` or deploy your own copy (see [Deploy](#deploy)).
 
 As of the 2026-10-24 23:29 UTC nightly run (the committed `data/seed.db` snapshot):
 
@@ -122,7 +123,7 @@ Or wait for a real break: when a scheduled run comes back empty or broken, that 
 
 ## It heals itself in CI too
 
-`.github/workflows/scrape.yml` (`nightly-scrape`) runs the whole pipeline every night, scheduled for 21:30 UTC (03:00 IST), and on `workflow_dispatch`. GitHub Actions cron is best-effort and in practice the run usually starts between 21:45 and 02:00 UTC (once as late as 05:31), most often around 23:30, which is why the timestamps in this README land near midnight UTC. It copies the committed `data/seed.db` to `data/radar.db`, runs `python -m radar.pipeline`, writes a job summary with `scripts/ci_summary.py` (per-source status, row counts, healing events), commits the refreshed `data/seed.db` back as `chore: refresh seed` so the Render dashboard shows last night's finds on its next cold start, and uploads `radar.db` as an artifact for 14 days.
+`.github/workflows/scrape.yml` (`nightly-scrape`) runs the whole pipeline every night, scheduled for 21:30 UTC (03:00 IST), and on `workflow_dispatch`. GitHub Actions cron is best-effort and in practice the run usually starts between 21:45 and 02:00 UTC (once as late as 05:31), most often around 23:30, which is why the timestamps in this README land near midnight UTC. It copies the committed `data/seed.db` to `data/radar.db`, runs `python -m radar.pipeline`, writes a job summary with `scripts/ci_summary.py` (per-source status, row counts, healing events), commits the refreshed `data/seed.db` back as `chore: refresh seed` so a deploy seeded from the repo shows last night's finds on its next cold start, and uploads `radar.db` as an artifact for 14 days.
 
 Record so far, from `data/seed.db` on 2026-10-25: **325 recorded source runs since 2026-08-22 (almost all from the nightly job), 313 ok, 6 healed, 6 failed; 13 heal attempts, 7 healed, 6 failed.** The workflow exits 1 when a heal did not fix a source. Of the 65 scheduled runs since 2026-08-21, 5 exited 1 that way: Sep 2, Oct 17, Oct 18 and twice on Oct 20 UTC (the Oct 19 night's run started late, at 00:28; the Oct 20 night's run had two failed heals, scholars4dev-scholarships and golang-jobs). Oct 22–24 were green. 65 of the repository's 107 commits are the bot's seed refreshes.
 
@@ -175,6 +176,8 @@ Diagnosis: the scraper returned zero rows — extraction likely broken
 In GitHub Actions the same two values go in as repository secrets.
 
 ## Dashboard
+
+Screenshots are of the hosted instance on 2026-10-25, before it was suspended. `make dashboard` serves the same page from the committed `data/seed.db` at http://localhost:8000.
 
 <img src="docs/img/dashboard.png" width="100%" alt="Opportunity Radar dashboard on 2026-10-25 at 1440 px: header with '5 collectors live', 'last run 23:33 UTC', search, a token key button, X and GitHub links and a blue Run pipeline button; four tiles (Opportunities tracked 1043 across 5 sources, Sources healthy 5/5 all systems go, New in recent runs 79, Self-heals 13 last 10-22 00:05); a Live opportunities table of opportunitydesk scholarships with Oct 25 and Oct 26 deadlines and red '0d left' and '1d left' chips; a Pipeline health panel with an Add source field and five healthy sources with their last-five-run dots; and the Spider-sense log showing the HEALED 0 → 92 rows event for mlh-hackathons (452s) above a FAILED 0 → 0 rows event for golang-jobs (156s)">
 
@@ -284,7 +287,7 @@ Trigger a run remotely:
 curl -X POST https://<your-app>/api/run -H "X-Run-Token: <token>"
 ```
 
-Because the nightly workflow commits the refreshed `data/seed.db`, a redeploy of the live site picks up last night's data even though the container itself keeps nothing.
+Because the nightly workflow commits the refreshed `data/seed.db`, a redeploy picks up last night's data even though the container itself keeps nothing. The author's Render instance is suspended; the deploy path above is how it ran.
 
 ## How Scraper Studio is used
 
@@ -332,7 +335,7 @@ magick docs/img/heal-loop.png -strip docs/img/heal-loop.png
 # heal-demo.gif (needs `agg` on PATH; stubbed CLI, real pipeline)
 make install && uv run python scripts/record_heal_demo.py
 
-# dashboard.png, spider-sense.png, dashboard-mobile.png (live site; crop offsets depend on the current layout)
+# dashboard.png, spider-sense.png, dashboard-mobile.png (taken from the hosted site before it was suspended; point at http://localhost:8000 after `make dashboard`; crop offsets depend on the current layout)
 chromium --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1440,1000 --virtual-time-budget=8000 --screenshot=docs/img/dashboard.png https://opportunity-radar-v64k.onrender.com/
 chromium --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=1440,1400 --virtual-time-budget=8000 --screenshot=/tmp/tall.png https://opportunity-radar-v64k.onrender.com/
 chromium --headless=new --no-sandbox --disable-gpu --hide-scrollbars --force-device-scale-factor=1 --window-size=430,932 --virtual-time-budget=8000 --screenshot=/tmp/mobile.png https://opportunity-radar-v64k.onrender.com/
